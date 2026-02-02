@@ -1,0 +1,13 @@
+{
+  "name": "ai-document-search",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev:backend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Set-Location -Path 'E:\\PROJECTS ML\\ai-document-search'; & '.\\.venv\\Scripts\\python.exe' -m uvicorn app.main:app --app-dir '.\\backend' --reload --reload-dir '.\\backend' --lifespan off --host 127.0.0.1 --port 8000\"",
+    "dev:frontend": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"Set-Location -Path 'E:\\PROJECTS ML\\ai-document-search\\frontend'; npm install --no-audit --no-fund; npm run dev\"",
+    "dev": "concurrently --raw --names backend,frontend --prefix-colors blue,green \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "8.2.2"
+  }
+}

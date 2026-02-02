@@ -1,0 +1,19 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.22,<1
+pydantic>=2.6,<3
+python-dotenv==1.0.0
+# For RAG (copy of requirements-rag)
+# Optional heavy deps for better embeddings & vector search.
+# They are not required because the app has TF-IDF + sklearn fallback.
+# Uncomment if you want them (ensure they are available for your OS/Python version).
+# sentence-transformers==2.2.2
+# faiss-cpu>=1.8.0
+numpy==1.26.4
+scikit-learn>=1.3
+# optional: openai, langchain, pinecone-client
+# OpenAI (optional for LLM synthesis)
+openai>=1.30.0
+# file upload / pdf parsing
+pypdf>=3.12.0
+python-multipart>=0.0.6
+aiofiles>=23.2.1

@@ -1,0 +1,83 @@
+AI Document Search — RAG & LLM Technical Summary
+
+Date: 2025-11-07
+
+This document summarizes how the Retrieval-Augmented Generation (RAG) system works in this project, the LLM integration, index/storage choices, configuration, and operational notes. Use this as a reference for development, debugging, and operational changes.
+
+1) High-level Architecture
+- Frontend: React + Vite UI (upload, chat, settings, analytics). Uses SSE (EventSource) for streaming LLM answers.
+- Backend: FastAPI service providing ingestion, retrieval, LLM synthesis, SSE streaming, and health/settings endpoints.
+- Index/storage: Local vector index persisted under backend/index/.
+- Embeddings: Prefer local sentence-transformers model; TF-IDF fallback using scikit-learn.
+- Optional acceleration: Faiss if installed (for ANN search).
+
+2) Key Components & Files
+- backend/app/llm.py — LLM integration layer.
+  - Uses modern OpenAI SDK (from openai import OpenAI) if available, with legacy openai fallback.
+  - Exposes synthesize_answer() (non-stream) and stream_synthesize_answer() (streaming SSE) with graceful fallbacks.
+  - Builds chat messages with persona presets and context-trimming logic.
+  - ping_llm() and llm_status() for health probes.
+
+- backend/app/rag.py — RAGIndex class.
+  - Supports sentence-transformers embeddings + Faiss index if available.
+  - TF-IDF + sklearn NearestNeighbors fallback when transformer/faiss missing or RAG_FAST set.
+  - Persists meta.json, embeddings.npy, faiss.index, and texts.json inside backend/index/.
+
+- backend/app/main.py — FastAPI endpoints.
+  - /upload — PDF upload -> extract text (via pypdf or PyPDF2) -> chunk -> ingest.
+  - /ingest — direct ingest of chunked texts and metas.
+  - /query — retrieval; optional use_llm=true to synthesize via LLM.
+  - /query_stream & /query_stream_sse — streaming endpoints returning incremental tokens and a meta event (citations).
+  - /index, /index_grouped, /delete — index management and inspection.
+  - /llm/health — quick/deep health checks.
+
+- backend/app/pdf_utils.py — PDF extraction and sliding-window chunker (chunk_size, overlap).
+- backend/app/memory.py — in-memory session memory for recent chat turns.
+- backend/app/rate_limit.py — in-memory token-bucket per-IP rate limiter.
+- backend/index/ — stored index artifacts (meta, embeddings, faiss.index, texts.json).
+
+3) RAG Pipeline (ingest -> retrieve -> synthesize)
+- Upload flow (/upload): PDF -> extract text -> chunk_text -> build meta for each chunk -> INDEX.add_texts().
+- Indexing: use sentence-transformers + faiss if available; else TF-IDF & sklearn; persist files in backend/index/.
+- Retrieval (/query): INDEX.query(query, k) returns top-k chunks (k clamped via RAG_MAX_K).
+- Synthesis: build messages with numbered context entries, enforce per-chunk and overall char caps, optionally include recent chat history. Call the LLM (stream or non-stream). Graceful fallback returns retrieved context when LLM unavailable.
+
+4) LLM / Provider Details
+- Primary: OpenAI chat completion APIs. Prefers modern SDK. Model set by OPENAI_MODEL env var. API key in OPENAI_API_KEY.
+- Anthropic: SDK is present in the venv but not currently used by the app; adapter needed to add it as a provider.
+- Embeddings: local sentence-transformers by default (EMBED_MODEL); OpenAI embeddings not implemented but can be added.
+
+5) Configuration & Env Variables
+- OPENAI_API_KEY: required for LLM synthesize.
+- OPENAI_MODEL: model name for chat completions.
+- EMBED_MODEL: embedding model name.
+- RAG_CONTEXT_CHARS_PER_CHUNK: default 800.
+- RAG_CONTEXT_MAX_CHARS: default 5000.
+- RAG_MAX_K: default 6.
+- OPENAI_MAX_OUTPUT_TOKENS: default 512.
+- RAG_FAST: set to 1 to force TF-IDF path.
+
+6) Error Handling & Rate-Limit
+- LLM errors: code returns context-only fallback; streaming yields a clear notice on rate limits.
+- Rate-limiting: in-memory token-bucket per-IP returning 429 and Retry-After.
+- PDF parsing requires pypdf or PyPDF2.
+
+7) Operational Notes & Recommendations
+- Cost control: keep prompt sizes conservative, gate LLM usage, and tune rate-limits.
+- Scalability: replace in-memory stores with Redis and use a managed vector DB for large corpora.
+- Observability: add metrics and logs for tokens consumed, latencies, and errors.
+- Robustness: add retries/backoff and caching for expensive operations.
+
+8) How to run a quick local demo
+- Install backend/requirements-rag.txt in a venv.
+- Create .env with OPENAI_API_KEY.
+- Start backend:
+  python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+- Upload a PDF via frontend or POST /upload, then POST /query with {"text":"..."} and ?use_llm=true.
+
+9) Where to change behavior
+- LLM model: set OPENAI_MODEL in .env.
+- Force TF-IDF: set RAG_FAST=1.
+- Prompt trimming: adjust RAG_CONTEXT_* env vars.
+
+If you want me to create a .docx version, I can convert this Markdown with pandoc (if installed) or generate a .docx using a Python script and python-docx; tell me which option you prefer and I will proceed.

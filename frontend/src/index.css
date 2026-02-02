@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 222.2 84% 4.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 222.2 84% 4.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 222.2 84% 4.9%;
+		--primary: 222.2 47.4% 11.2%;
+		--primary-foreground: 210 40% 98%;
+		--secondary: 210 40% 96.1%;
+		--secondary-foreground: 222.2 47.4% 11.2%;
+		--muted: 210 40% 96.1%;
+		--muted-foreground: 215.4 16.3% 46.9%;
+		--accent: 210 40% 96.1%;
+		--accent-foreground: 222.2 47.4% 11.2%;
+		--destructive: 0 84.2% 60.2%;
+		--destructive-foreground: 210 40% 98%;
+		--border: 214.3 31.8% 91.4%;
+		--input: 214.3 31.8% 91.4%;
+		--ring: 222.2 84% 4.9%;
+		--radius: 0.75rem;
+
+		/* Dynamic theme variables */
+		--accent-start: 99 102 241;
+		--accent-end: 6 182 212;
+		--accent-solid: 99 102 241;
+    
+		/* Gradients */
+		--gradient-accent: linear-gradient(135deg, rgb(var(--accent-start)), rgb(var(--accent-end)));
+		--gradient-ambient: radial-gradient(circle at 20% 50%, rgba(var(--accent-start), 0.15), transparent 50%),
+												radial-gradient(circle at 80% 80%, rgba(var(--accent-end), 0.15), transparent 50%);
+    
+		/* Shadows */
+		--shadow-accent: 0 10px 40px -10px rgba(var(--accent-solid), 0.3);
+		--shadow-elevated: 0 20px 60px -15px rgba(0, 0, 0, 0.1);
+    
+		/* Transitions */
+		--transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		--transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	}
+
+	.dark {
+		--background: 222.2 47% 11%;
+		--foreground: 210 40% 98%;
+		--card: 222.2 47% 11%;
+		--card-foreground: 210 40% 98%;
+		--popover: 222.2 47% 11%;
+		--popover-foreground: 210 40% 98%;
+		--primary: 210 40% 98%;
+		--primary-foreground: 222.2 47.4% 11.2%;
+		--secondary: 217.2 32.6% 17.5%;
+		--secondary-foreground: 210 40% 98%;
+		--muted: 217.2 32.6% 17.5%;
+		--muted-foreground: 215 20.2% 65.1%;
+		--accent: 217.2 32.6% 17.5%;
+		--accent-foreground: 210 40% 98%;
+		--destructive: 0 62.8% 30.6%;
+		--destructive-foreground: 210 40% 98%;
+		--border: 217.2 32.6% 17.5%;
+		--input: 217.2 32.6% 17.5%;
+		--ring: 212.7 26.8% 83.9%;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground antialiased;
+	}
+}
+
+@layer components {
+	.accent-gradient {
+		background: var(--gradient-accent);
+	}
+  
+	.splash-gradient {
+		background: linear-gradient(135deg, rgb(var(--accent-start)), rgb(var(--accent-end)));
+	}
+  
+	.btn-accent {
+		@apply bg-gradient-to-r from-[rgb(var(--accent-start))] to-[rgb(var(--accent-end))] text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+	}
+  
+	.theme-transition {
+		transition: var(--transition-smooth);
+	}
+  
+	.bg-ambient {
+		@apply fixed inset-0 pointer-events-none;
+		background: var(--gradient-ambient);
+		z-index: 0;
+	}
+  
+	.top-gradient-bar {
+		background: var(--gradient-accent);
+		animation: shimmer 3s infinite;
+	}
+  
+	.typing-dots span {
+		@apply inline-block w-2 h-2 rounded-full bg-current mx-0.5;
+		animation: typing 1.4s infinite;
+	}
+  
+	.typing-dots span:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+  
+	.typing-dots span:nth-child(3) {
+		animation-delay: 0.4s;
+	}
+  
+	.fade-in-up {
+		animation: fadeInUp 0.6s ease-out forwards;
+	}
+  
+	.splash-title {
+		text-shadow: 0 2px 20px rgba(255, 255, 255, 0.3);
+	}
+}
+
+@keyframes shimmer {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.7; }
+}
+
+@keyframes typing {
+	0%, 60%, 100% { transform: translateY(0); }
+	30% { transform: translateY(-8px); }
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
